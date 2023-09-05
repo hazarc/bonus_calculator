@@ -1,10 +1,11 @@
 package com.example.bonus.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
+import javax.persistence.*;
+import java.util.Date;
 import java.util.Objects;
 
 @Getter
@@ -23,6 +24,9 @@ public class Transaction {
     @JsonBackReference
     @ManyToOne
     private Customer customer;
+
+    @Temporal(TemporalType.DATE)
+    private Date transactionDate;
 
     // Getters and setters
 

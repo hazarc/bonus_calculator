@@ -2,10 +2,10 @@ package com.example.bonus.domain;
 
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
+import javax.persistence.*;
 import java.util.List;
 import java.util.Objects;
 

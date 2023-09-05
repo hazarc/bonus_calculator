@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @RestController
 @RequestMapping("/customers")
@@ -66,6 +66,51 @@ public class CustomerController {
         }
     }
 
+    @GetMapping("/{customerId}/monthly-reward-points")
+    public ResponseEntity<Map<String, Integer>> calculateMonthlyRewardPoints(
+            @PathVariable Long customerId) {
+        // Retrieve the customer by ID from the repository
+        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+
+        if (optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+
+            // Group transactions by month
+            Map<String, List<Transaction>> transactionsByMonth = groupTransactionsByMonth(customer.getTransactions());
+
+            // Calculate reward points for each month
+            Map<String, Integer> monthlyRewardPoints = new LinkedHashMap<>();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+
+            for (Map.Entry<String, List<Transaction>> entry : transactionsByMonth.entrySet()) {
+                String month = entry.getKey();
+                List<Transaction> monthlyTransactions = entry.getValue();
+                int monthlyPoints = calculateRewardPoints(monthlyTransactions);
+                monthlyRewardPoints.put(month, monthlyPoints);
+            }
+
+            return ResponseEntity.ok(monthlyRewardPoints);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    private Map<String, List<Transaction>> groupTransactionsByMonth(List<Transaction> transactions) {
+        // Initialize a map to store transactions grouped by month
+        Map<String, List<Transaction>> transactionsByMonth = new HashMap<>();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+
+        for (Transaction transaction : transactions) {
+            String monthKey = dateFormat.format(transaction.getTransactionDate());
+
+            // If the monthKey doesn't exist in the map, create a new list for it
+            transactionsByMonth.computeIfAbsent(monthKey, k -> new ArrayList<>()).add(transaction);
+        }
+
+        return transactionsByMonth;
+    }
+
     @PostMapping("/add")
     public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
         Customer createdCustomer = customerRepository.save(customer);
@@ -73,6 +118,16 @@ public class CustomerController {
     }
 
     // Calculate reward points based on transaction amount
+    private int calculateRewardPoints(List<Transaction> transactions) {
+        // Calculate reward points based on transaction amounts and rules
+        int totalRewardPoints = 0;
+
+        for (Transaction transaction : transactions) {
+            totalRewardPoints += transaction.getRewardPoints();
+        }
+        return totalRewardPoints;
+    }
+
     private int calculateRewardPoints(double transactionAmount) {
         int rewardPoints = 0;
 
@@ -88,4 +143,5 @@ public class CustomerController {
 
         return rewardPoints;
     }
+
 }
