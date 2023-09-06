@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Objects;
 
 @Data
-@RequiredArgsConstructor
-@AllArgsConstructor
 @Entity
 public class Customer {
     @Id
