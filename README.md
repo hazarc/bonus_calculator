@@ -15,19 +15,16 @@
       {
         "id": 1,
         "amount": 120.0,
-        "rewardPoints": 0,
         "transactionDate": "2023-07-01"
       },
       {
         "id": 2,
         "amount": 75.0,
-        "rewardPoints": 0,
         "transactionDate": "2023-08-15"
       },
       {
         "id": 3,
         "amount": 60.0,
-        "rewardPoints": 0,
         "transactionDate": "2023-09-30"
       }
     ],
