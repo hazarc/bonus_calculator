@@ -1,22 +1,55 @@
 # bonus_calculator
-###
-### Request to add a customer
-POST http://localhost:8080/customers/add
-Content-Type: application/json
 
-{
-  "name": "John Doe",
-  "email": "john.doe@example.com"
-}
+## Set up data
 
+**GET** http://localhost:8080/customers/list
 
-### Request to Add a Transaction
-POST http://localhost:8080/customers/1/transactions
-Content-Type: application/json
+#### Response
 
-{
-  "amount": 120.0
-}
+```json
+[
+  {
+    "id": 1,
+    "name": "Customer 1",
+    "transactions": [
+      {
+        "id": 1,
+        "amount": 120.0,
+        "rewardPoints": 0,
+        "transactionDate": "2023-07-01"
+      },
+      {
+        "id": 2,
+        "amount": 75.0,
+        "rewardPoints": 0,
+        "transactionDate": "2023-08-15"
+      },
+      {
+        "id": 3,
+        "amount": 60.0,
+        "rewardPoints": 0,
+        "transactionDate": "2023-09-30"
+      }
+    ],
+    "totalRewardPoints": 0
+  }
+]
+```
 
-### Request to view reward points - returns a customer instance
-GET http://localhost:8080/customers/1/reward-points
+### View monthly reward points and total rewards for a valid/existing customer (id = 1)
+
+- **HTTP Request:**
+  - **Method:** GET
+  - **Endpoint:** http://localhost:8080/customers/1/monthly-reward-points
+
+- **Response:**
+  ```json
+  {
+    "monthlyRewards": {
+      "2023-07": 90,
+      "2023-08": 25,
+      "2023-09": 10
+    },
+    "totalRewards": 125
+  }
+```
