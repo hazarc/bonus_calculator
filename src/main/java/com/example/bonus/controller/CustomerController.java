@@ -1,9 +1,6 @@
 package com.example.bonus.controller;
 
-import com.example.bonus.domain.Customer;
-import com.example.bonus.domain.CustomerRepository;
-import com.example.bonus.domain.Transaction;
-import com.example.bonus.domain.TransactionRepository;
+import com.example.bonus.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,78 +15,32 @@ public class CustomerController {
     @Autowired
     private CustomerRepository customerRepository;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
-
-    // Endpoint for adding transactions
-    @PostMapping("/{customerId}/transactions")
-    public ResponseEntity<String> addTransaction(
-            @PathVariable Long customerId,
-            @RequestBody Transaction transaction) {
-
-        // Find the customer by ID or return a 404 if not found
-        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
-        if (optionalCustomer.isPresent()) {
-            Customer customer = optionalCustomer.get();
-            transaction.setCustomer(customer);
-
-            // Calculate reward points for the transaction
-            int rewardPoints = calculateRewardPoints(transaction.getAmount());
-            transaction.setRewardPoints(rewardPoints);
-            transactionRepository.save(transaction);
-
-            return ResponseEntity.ok("Transaction added successfully.");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    // Endpoint for calculating reward points per month and total
-    @GetMapping("/{customerId}/reward-points")
-    public ResponseEntity<Customer> calculateRewardPoints(
-            @PathVariable Long customerId) {
-
-        // Find the customer by ID or return a 404 if not found
-        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
-        if (optionalCustomer.isPresent()) {
-            Customer customer = optionalCustomer.get();
-
-            // Calculate total reward points for the customer
-            int totalRewardPoints = transactionRepository.calculateTotalRewardPoints(customerId);
-
-            // Set the total reward points for the customer
-            customer.setTotalRewardPoints(totalRewardPoints);
-
-            return ResponseEntity.ok(customer);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @GetMapping("/{customerId}/monthly-reward-points")
-    public ResponseEntity<Map<String, Integer>> calculateMonthlyRewardPoints(
+    public ResponseEntity<RewardResponse> calculateMonthlyRewardPoints(
             @PathVariable Long customerId) {
-        // Retrieve the customer by ID from the repository
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
 
         if (optionalCustomer.isPresent()) {
             Customer customer = optionalCustomer.get();
-
-            // Group transactions by month
             Map<String, List<Transaction>> transactionsByMonth = groupTransactionsByMonth(customer.getTransactions());
-
-            // Calculate reward points for each month
             Map<String, Integer> monthlyRewardPoints = new LinkedHashMap<>();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+
+            int totalRewardPoints = 0;
 
             for (Map.Entry<String, List<Transaction>> entry : transactionsByMonth.entrySet()) {
                 String month = entry.getKey();
                 List<Transaction> monthlyTransactions = entry.getValue();
                 int monthlyPoints = calculateRewardPoints(monthlyTransactions);
                 monthlyRewardPoints.put(month, monthlyPoints);
+                totalRewardPoints += monthlyPoints;
             }
 
-            return ResponseEntity.ok(monthlyRewardPoints);
+            RewardResponse rewardResponse = new RewardResponse();
+            rewardResponse.setMonthlyRewards(monthlyRewardPoints);
+            rewardResponse.setTotalRewards(totalRewardPoints);
+
+            return ResponseEntity.ok(rewardResponse);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -111,21 +62,15 @@ public class CustomerController {
         return transactionsByMonth;
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
-        Customer createdCustomer = customerRepository.save(customer);
-        return ResponseEntity.ok(createdCustomer);
-    }
 
     // Calculate reward points based on transaction amount
     private int calculateRewardPoints(List<Transaction> transactions) {
         // Calculate reward points based on transaction amounts and rules
-        int totalRewardPoints = 0;
-
+        int monthlyPoints = 0;
         for (Transaction transaction : transactions) {
-            totalRewardPoints += transaction.getRewardPoints();
+            monthlyPoints += calculateRewardPoints(transaction.getAmount());
         }
-        return totalRewardPoints;
+        return monthlyPoints;
     }
 
     private int calculateRewardPoints(double transactionAmount) {
