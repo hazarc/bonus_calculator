@@ -20,7 +20,6 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
-            // Create and save 3 customers with sample transactions
             createAndSaveCustomer("Customer 1", 1);
         } catch (ParseException e) {
             e.printStackTrace();
@@ -31,7 +30,7 @@ public class DataInitializer implements CommandLineRunner {
         Customer customer = new Customer();
         customer.setName(name);
 
-        // Create and add 3 sample transactions for each customer with different amounts and dates
+        // Create and add 3 sample transactions for given customer with different amounts and dates
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         // Transaction 1
