@@ -22,8 +22,6 @@ public class DataInitializer implements CommandLineRunner {
         try {
             // Create and save 3 customers with sample transactions
             createAndSaveCustomer("Customer 1", 1);
-            createAndSaveCustomer("Customer 2", 2);
-            createAndSaveCustomer("Customer 3", 3);
         } catch (ParseException e) {
             e.printStackTrace();
         }

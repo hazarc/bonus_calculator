@@ -89,4 +89,11 @@ public class CustomerController {
         return rewardPoints;
     }
 
+    // GET endpoint to list all customers and their transactions
+    @GetMapping("/list")
+    public ResponseEntity<List<Customer>> listAllCustomers() {
+        List<Customer> customers = customerRepository.findAll();
+        return ResponseEntity.ok(customers);
+    }
+
 }
